@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>
+        Shopping
+    </title>
+
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/fontawesome/css/all.min.css"/>
+    
+    <link rel="icon" type="image/png" href="img/favicon.ico" /> 
+
+
+<style type="text/css">
+        /*
+        .bg-body {
+            style= "background-image: url(img/restaurant.jpg);";
+            background-image: url("img/restaurant.jpg");    
+        } */
+        .label-class{
+          font-size: 1.5em;
+          line-height: 1em;
+          font-weight: normal;
+        }
+          
+        .well-searchbox {
+            min-height: 150px;
+            max-height: 150px;
+            min-width: 150px;
+            max-width: 150px;
+            padding: 19px;
+            margin: auto;
+            position: relative;
+            z-index: 80;
+            /*overflow:  auto;*/
+            overflow:  visible;
+            top: 150px;
+                
+            /*
+                position:absolute;
+            right: 100px;
+            margin-bottom: 20px;  
+                */
+            
+            background: rgba(0, 0, 0, 0.6);
+            border: 0px solid #e3e3e3;
+            border-radius: 20px;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+                    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+        }
+
+        .well-searchbox label {
+            color: #fff;
+        }
+        @media (max-width: 800px) {
+            .well-searchbox {
+                min-height: 300px;
+                max-height: 450px;
+                min-width: 450px;
+                max-width: 450px;
+                padding: 19px;
+                margin: auto;
+                position: relative;
+                z-index: 80;
+                /*overflow:  auto;*/
+                overflow:  visible;
+                top: 150px;
+                    
+                /*
+                    position:absolute;
+                right: 100px;
+                margin-bottom: 20px;  
+                    */
+                
+                background: rgba(0, 0, 0, 0.6);
+                border: 0px solid #e3e3e3;
+                border-radius: 20px;
+                -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+                        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+            }
+        }   
+        .err-font {
+            font-size: 16px; 
+            font-family: monospace;
+            font-weight: bold;
+            background-color: #FF4400 !important;
+            color:white;
+            text-align: center;
+        }
+        .offline-font {
+            font-size: 16px; 
+            font-family: monospace;
+            font-weight: bold;
+            text-align: center;
+            color:white;
+            background-color:green !important;
+        }
+        
+        /*       
+        @media (max-width: 1920px) {
+            .bg-body {
+                background-image: url(img/bg1920X1080.jpg);            
+            }
+        }
+        @media (max-width: 1024px) {
+            .bg-body {
+                background-image: url(img/bg1024X768.jpg);            
+            }
+        }
+        */
+    </style>
+
+</head>
+<body class='bg-body'>
+     
+
+    <div class="well-searchbox">
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <div class="col-md-12 col-sm-12">
+                        <label class="control-label center label-class">
+                            <i class='fas fa-cog fa-spin' style='font-size:90px;color:white;'></i>
+                        </label>
+                </div>
+            </div>
+            <hr>
+        </form>
+    </div>
+
+    <script src="js/jquery/jquery.min.js"></script>
+    <script src="js/bootstrap/bootstrap.min.js"></script>
+    <script src="js/jquery/devicedetector-min.js"></script>     
+     
+     <script nonce="abc123">
+        //var pos_device = $("#input-pos-device-detect").val();
+        //if (pos_device != "auto") {
+        //    openLoginPage(pos_device);
+        //} else {
+            openLoginPage(deviceDetector.device);
+        //}
+    function openLoginPage(pos_device) {   
+        switch(pos_device) {
+            case "desktop":
+                window.location.href = "index";
+                break;
+            case "tablet":
+                window.location.href = "index";
+                break;
+            default:
+                pos_device = "phone";
+                window.location.href = "phone";
+                break;
+        }
+    }
+    </script>
+</body>
+</html>
