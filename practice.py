@@ -14,13 +14,9 @@ response = requests.get(url, headers=headers)
 response.raise_for_status()
 
 soup = BeautifulSoup(response.text, "html.parser")
-
-# Debug: Print first 1000 characters of the loaded HTML to verify structure
 print(soup.prettify()[:10000000000])
 
 product_found = False
-
-# Select product containers
 for item in soup.select("div.item"):
     name_tag = item.select_one("p > a[href^='https://www.rahimstore.com/product/']")
     name = name_tag.get_text(strip=True) if name_tag else None
@@ -30,7 +26,7 @@ for item in soup.select("div.item"):
         data_string = button_tag.get("data")
         parts = data_string.split("~")
         if len(parts) >= 3:
-            price = parts[2]  # Sale price
+            price = parts[2]
 
             if name and price:
                 print(f"{name} — Rs. {price}")
