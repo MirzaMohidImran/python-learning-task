@@ -12,7 +12,7 @@ conn = psycopg2.connect(
 )
 cursor = conn.cursor()
 
-# Scraping setup
+# Scrapin
 base_url = "https://alfatah.pk/products.json"
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
@@ -46,7 +46,7 @@ while True:
         variant = product.get("variants", [{}])[0]
         price = variant.get("price", "0")
 
-        # Save to DB
+        # Save DB
         try:
             cursor.execute(
                 """
@@ -68,6 +68,6 @@ while True:
 
 print(f"\nScraped total {len(all_products)} products.")
 
-# Close DB connection
+# Close DB connec
 cursor.close()
 conn.close()
