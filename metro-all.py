@@ -1,10 +1,20 @@
 import requests
-import csv
 import time
+import psycopg2
+from datetime import datetime
 
+# db
+DB_CONFIG = {
+    "dbname": "rahim_store",
+    "user": "postgres",
+    "password": "mohid8907",
+    "host": "localhost",
+    "port": "5432"
+}
+
+# api
 CATEGORIES_API = "https://admin.metro-online.pk/api/read/Categories?filter=storeId&filterValue=10"
-
-LIMIT = 500  # API max limit per request
+LIMIT = 500
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -24,6 +34,7 @@ FILTER_KEYS = [
     "tier4Id"
 ]
 
+# scrap function
 def fetch_categories():
     try:
         resp = requests.get(CATEGORIES_API, headers=HEADERS)
@@ -40,7 +51,6 @@ def get_children(categories, parent_id):
 def fetch_products_for_filter(category_id, filter_key):
     products = []
     offset = 0
-
     while True:
         url = (
             "https://admin.metro-online.pk/api/read/Products"
@@ -72,55 +82,51 @@ def fetch_products_for_filter(category_id, filter_key):
                 products.append((name, price))
 
         if len(items) < LIMIT:
-            break  # No more pages
+            break
 
         offset += LIMIT
-        time.sleep(0.3)  # delay
+        time.sleep(0.3)
 
     return products
 
-def fetch_all_products(category_id):
+def fetch_all_products(category_id, category_path, cur):
     seen = set()
-    all_products = []
-
     for filter_key in FILTER_KEYS:
         print(f"    Fetching products with filter '{filter_key}' for category ID {category_id}...")
         prods = fetch_products_for_filter(category_id, filter_key)
         for name, price in prods:
             if name not in seen:
                 seen.add(name)
-                all_products.append((name, price))
+                cur.execute("""
+                    INSERT INTO scrapped_products (Name, Price, Source, ScrapDate)
+                    VALUES (%s, %s, %s, %s)
+                """, (name, float(price) if price != "N/A" else 0.0, " > ".join(category_path), datetime.now()))
         time.sleep(0.3)
 
-    return all_products
-
-def recursive_scrape(categories, parent_id=None, path=None, all_rows=None):
+def recursive_scrape(categories, parent_id=None, path=None, cur=None):
     if path is None:
         path = []
-    if all_rows is None:
-        all_rows = []
 
     children = get_children(categories, parent_id)
 
     if not children:
-        # leaf category: fetch all products for this category via all filters
         if parent_id is None:
-            return all_rows  # no categories, no products
+            return
         print(f"  Leaf category reached: {' > '.join(path)} - fetching products...")
-        products = fetch_all_products(parent_id)
-        for name, price in products:
-            all_rows.append(path + [name, price])
-        return all_rows
+        fetch_all_products(parent_id, path, cur)
+        return
 
     for child in children:
         child_name = child.get("category_name", "").strip()
         child_id = child.get("id")
         print(f"  Descending into category: {' > '.join(path + [child_name])}")
-        recursive_scrape(categories, child_id, path + [child_name], all_rows)
+        recursive_scrape(categories, child_id, path + [child_name], cur)
 
-    return all_rows
-
+#  main
 def main():
+    conn = psycopg2.connect(**DB_CONFIG)
+    cur = conn.cursor()
+
     categories = fetch_categories()
     if not categories:
         print("⚠ No categories found, exiting.")
@@ -129,33 +135,16 @@ def main():
     top_categories = [cat for cat in categories if cat.get("parentId") is None]
     print(f"Found {len(top_categories)} top-level categories.")
 
-    all_data = []
-
     for top_cat in top_categories:
         top_name = top_cat.get("category_name", "").strip()
         top_id = top_cat.get("id")
         print(f"Starting scrape for top category: {top_name}")
-        all_data.extend(recursive_scrape(categories, top_id, [top_name]))
+        recursive_scrape(categories, top_id, [top_name], cur)
 
-    max_depth = 0
-    for row in all_data:
-        depth = len(row) - 2
-        if depth > max_depth:
-            max_depth = depth
-
-    headers = [f"Category Level {i+1}" for i in range(max_depth)] + ["Product Name", "Product Price"]
-
-    with open("metro_complete_products.csv", "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(headers)
-        for row in all_data:
-            cat_levels = row[:-2]
-            product_name = row[-2]
-            product_price = row[-1]
-            padded = cat_levels + [""] * (max_depth - len(cat_levels)) + [product_name, product_price]
-            writer.writerow(padded)
-
-    print(f"Scraped {len(all_data)} products. Saved to metro_complete_products.csv")
+    conn.commit()
+    cur.close()
+    conn.close()
+    print("Scraping completed and data inserted into db")
 
 if __name__ == "__main__":
     main()
